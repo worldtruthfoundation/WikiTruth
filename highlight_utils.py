@@ -137,7 +137,7 @@ def create_highlight_interface(text, article_id, context):
     """
     # Text input for the highlighted text
     highlight_text = st.text_area(
-        "Part for review:", 
+        "For review:", 
         key=f"highlight_input_{context}",
         help="Enter the exact text from the article that you want to review"
     )
