@@ -1,7 +1,0 @@
-# Required packages for TruePedia deployment
-# Copy these into your requirements.txt file when deploying
-
-streamlit
-wikipedia
-wikipedia-api
-translate
