@@ -229,6 +229,24 @@ with st.sidebar:
             
         st.markdown('</div>', unsafe_allow_html=True)
     
+    # Review visibility toggle
+    if st.session_state.current_article:
+        st.markdown("### 👁️ Review Visibility")
+        st.markdown('<div style="padding: 10px; background-color: #F3E5F5; border-radius: 5px; border: 1px solid #CE93D8;">',
+                  unsafe_allow_html=True)
+        
+        show_reviews_toggle = st.toggle(
+            "Show community reviews", 
+            value=st.session_state.show_reviews,
+            help="Toggle visibility of text marked for review by the community"
+        )
+        
+        if show_reviews_toggle != st.session_state.show_reviews:
+            st.session_state.show_reviews = show_reviews_toggle
+            st.rerun()
+            
+        st.markdown('</div>', unsafe_allow_html=True)
+    
     # Highlighting controls
     if st.session_state.current_article:
         st.markdown("### ✏️ Collaborative Review")
@@ -314,6 +332,10 @@ if st.session_state.current_article:
     summary_tab, content_tab = st.tabs(["Summary", "Full Content"])
     
     with summary_tab:
+        # Get article ID for highlights
+        article_id = f"{article['title']}_{st.session_state.current_language}"
+        highlights = get_highlights(article_id)
+        
         # If translation is requested, show translated summary
         if st.session_state.show_translation and st.session_state.translate_to != st.session_state.current_language:
             with st.spinner(f"Translating summary to {get_language_name(st.session_state.translate_to)}..."):
@@ -323,28 +345,26 @@ if st.session_state.current_article:
                     st.session_state.current_language
                 )
                 
-                # Get and apply highlights
-                article_id = f"{article['title']}_{st.session_state.current_language}"
-                highlights = get_highlights(article_id)
+                # Apply highlights if showing reviews is enabled
+                if st.session_state.show_reviews and highlights:
+                    highlighted_text = apply_highlights_to_text(translated_summary, highlights)
+                else:
+                    highlighted_text = translated_summary
                 
-                # Apply highlights to the summary
-                highlighted_text = apply_highlights_to_text(translated_summary, highlights)
-                
-                # Show the highlighted text
+                # Show the text
                 st.markdown(f'<div class="article-summary">{highlighted_text}</div>', unsafe_allow_html=True)
                 
                 # Add highlighting interface if needed
                 if st.session_state.highlight_mode:
                     create_highlight_interface(translated_summary, article_id, "summary")
         else:
-            # Get and apply highlights
-            article_id = f"{article['title']}_{st.session_state.current_language}"
-            highlights = get_highlights(article_id)
+            # Apply highlights if showing reviews is enabled
+            if st.session_state.show_reviews and highlights:
+                highlighted_text = apply_highlights_to_text(article["summary"], highlights)
+            else:
+                highlighted_text = article["summary"]
             
-            # Apply highlights to the summary
-            highlighted_text = apply_highlights_to_text(article["summary"], highlights)
-            
-            # Show the highlighted text
+            # Show the text
             st.markdown(f'<div class="article-summary">{highlighted_text}</div>', unsafe_allow_html=True)
             
             # Add highlighting interface if needed
@@ -352,6 +372,9 @@ if st.session_state.current_article:
                 create_highlight_interface(article["summary"], article_id, "summary")
     
     with content_tab:
+        # Article ID for highlighting
+        article_id = f"{article['title']}_{st.session_state.current_language}"
+        
         # Make article content collapsible in sections
         if st.session_state.show_translation and st.session_state.translate_to != st.session_state.current_language:
             with st.spinner(f"Translating content to {get_language_name(st.session_state.translate_to)}..."):
@@ -363,20 +386,22 @@ if st.session_state.current_article:
                     st.session_state.current_language
                 )
                 
-                # Article ID for highlighting
-                article_id = f"{article['title']}_{st.session_state.current_language}"
-                
                 # Split content into sections for collapsible viewing
                 sections = split_content_into_sections(translated_content)
                 
                 # Get highlights
                 highlights = get_highlights(article_id)
                 
-                # For each section, apply highlights and create highlight interface
+                # For each section, apply highlights if showing reviews is enabled
                 for i, section in enumerate(sections):
                     with st.expander(section["title"], expanded=(i == 0)):
-                        highlighted_content = apply_highlights_to_text(section["content"], highlights)
-                        st.markdown(highlighted_content, unsafe_allow_html=True)
+                        # Apply highlights if showing reviews is enabled
+                        if st.session_state.show_reviews and highlights:
+                            section_content = apply_highlights_to_text(section["content"], highlights)
+                        else:
+                            section_content = section["content"]
+                            
+                        st.markdown(section_content, unsafe_allow_html=True)
                         
                         if st.session_state.highlight_mode:
                             create_highlight_interface(section["content"], article_id, f"section_{i}")
@@ -387,17 +412,19 @@ if st.session_state.current_article:
             # Split content into sections for collapsible viewing
             sections = split_content_into_sections(article["content"])
             
-            # Article ID for highlighting
-            article_id = f"{article['title']}_{st.session_state.current_language}"
-            
             # Get highlights
             highlights = get_highlights(article_id)
             
-            # For each section, apply highlights and create highlight interface
+            # For each section, apply highlights if showing reviews is enabled
             for i, section in enumerate(sections):
                 with st.expander(section["title"], expanded=(i == 0)):
-                    highlighted_content = apply_highlights_to_text(section["content"], highlights)
-                    st.markdown(highlighted_content, unsafe_allow_html=True)
+                    # Apply highlights if showing reviews is enabled
+                    if st.session_state.show_reviews and highlights:
+                        section_content = apply_highlights_to_text(section["content"], highlights)
+                    else:
+                        section_content = section["content"]
+                        
+                    st.markdown(section_content, unsafe_allow_html=True)
                     
                     if st.session_state.highlight_mode:
                         create_highlight_interface(section["content"], article_id, f"section_{i}")
@@ -413,7 +440,8 @@ else:
     2. 📝 **Select**: Choose an article from the search results (displayed as tags)
     3. 🌐 **Explore**: View the article in different languages
     4. 🔄 **Translate**: Translate the article content to your preferred language
-    5. ✨ **Collaborate**: Highlight important passages for other users to see
+    5. 👁️ **Toggle Reviews**: Choose whether to see community reviews and highlights
+    6. ✨ **Collaborate**: Highlight important passages for other users to see
     
-    TruePedia gives you access to Wikipedia content across multiple languages, provides translation capabilities, and now allows collaborative highlighting for better knowledge sharing.
+    TruePedia gives you access to Wikipedia content across multiple languages, provides translation capabilities, and allows collaborative highlighting for better knowledge sharing.
     """)
