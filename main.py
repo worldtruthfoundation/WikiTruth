@@ -1,6 +1,7 @@
 import streamlit as st
 import json
 import os
+import time
 from wiki_utils import (
     get_wikipedia_search_results,
     get_article_content,
@@ -378,16 +379,51 @@ if st.session_state.current_article:
         # Make article content collapsible in sections
         if st.session_state.show_translation and st.session_state.translate_to != st.session_state.current_language:
             with st.spinner(f"Translating content to {get_language_name(st.session_state.translate_to)}..."):
-                # Only translate a portion of the content to avoid rate limits
-                content_preview = article["content"][:3000] + "..." if len(article["content"]) > 3000 else article["content"]
-                translated_content = translate_text(
-                    content_preview,
-                    st.session_state.translate_to,
-                    st.session_state.current_language
-                )
+                # Split the content into sections first for better handling of large texts
+                original_sections = split_content_into_sections(article["content"])
                 
-                # Split content into sections for collapsible viewing
-                sections = split_content_into_sections(translated_content)
+                translated_sections = []
+                
+                # Create a progress bar for section translation
+                section_progress = st.progress(0)
+                section_text = st.empty()
+                section_text.text("Preparing to translate sections...")
+                
+                # Translate each section separately (smaller chunks are easier to handle)
+                for i, section in enumerate(original_sections):
+                    section_text.text(f"Translating section {i+1}/{len(original_sections)}: {section['title']}")
+                    
+                    # Update progress
+                    section_progress.progress((i) / len(original_sections))
+                    
+                    # Translate the section title and content
+                    translated_title = translate_text(
+                        section["title"],
+                        st.session_state.translate_to,
+                        st.session_state.current_language
+                    )
+                    
+                    translated_content = translate_text(
+                        section["content"],
+                        st.session_state.translate_to,
+                        st.session_state.current_language
+                    )
+                    
+                    # Add to our list of translated sections
+                    translated_sections.append({
+                        "title": translated_title,
+                        "content": translated_content
+                    })
+                    
+                    # Update progress after section is complete
+                    section_progress.progress((i+1) / len(original_sections))
+                
+                # Clear progress indicators
+                section_progress.empty()
+                section_text.empty()
+                
+                # Use the translated sections directly
+                sections = translated_sections
                 
                 # Get highlights
                 highlights = get_highlights(article_id)
@@ -406,8 +442,8 @@ if st.session_state.current_article:
                         if st.session_state.highlight_mode:
                             create_highlight_interface(section["content"], article_id, f"section_{i}")
                 
-                if len(article["content"]) > 3000:
-                    st.info("Only a portion of the content has been translated due to length limitations.")
+                # No length limitations on translation
+                pass
         else:
             # Split content into sections for collapsible viewing
             sections = split_content_into_sections(article["content"])

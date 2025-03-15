@@ -1,13 +1,43 @@
-import wikipediaapi
-import wikipedia
-from translate import Translator
 import streamlit as st
 import time
+import re
+import threading
+import urllib.parse
+import requests
+import json
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+# Simple translation function without external dependencies
+def basic_translate(text, to_lang, from_lang='auto'):
+    """Basic translation using free web API"""
+    if not text or not text.strip():
+        return text
+        
+    try:
+        # Using Google Translate API for public use (free tier)
+        fallback_url = f"https://translate.googleapis.com/translate_a/single?client=gtx&sl={from_lang}&tl={to_lang}&dt=t&q={urllib.parse.quote(text)}"
+        fallback_response = requests.get(fallback_url)
+        
+        if fallback_response.status_code == 200:
+            data = fallback_response.json()
+            if isinstance(data, list) and len(data) > 0 and isinstance(data[0], list):
+                translated = ''.join([sentence[0] for sentence in data[0] if isinstance(sentence, list) and len(sentence) > 0])
+                return translated
+            else:
+                # Fallback to direct text return
+                return text
+        else:
+            return text
+                
+    except Exception as e:
+        st.error(f"Translation error: {str(e)}")
+        return text
 
 @st.cache_data(ttl=3600)
 def get_wikipedia_search_results(query, language="en"):
     """
     Search Wikipedia for articles matching the query in specified language
+    using the MediaWiki API directly
     
     Args:
         query (str): The search term
@@ -20,10 +50,21 @@ def get_wikipedia_search_results(query, language="en"):
         return []
     
     try:
-        # Set the language for the Wikipedia API
-        wikipedia.set_lang(language)
-        # Search for articles with the given query
-        search_results = wikipedia.search(query, results=10)
+        # Use Wikipedia's API directly via requests
+        url = f"https://{language}.wikipedia.org/w/api.php"
+        params = {
+            "action": "query",
+            "format": "json",
+            "list": "search",
+            "srsearch": query,
+            "srlimit": 10
+        }
+        
+        response = requests.get(url, params=params)
+        data = response.json()
+        
+        # Extract titles from the search results
+        search_results = [item["title"] for item in data.get("query", {}).get("search", [])]
         return search_results
     except Exception as e:
         st.error(f"Error searching Wikipedia: {str(e)}")
@@ -32,7 +73,7 @@ def get_wikipedia_search_results(query, language="en"):
 @st.cache_data(ttl=3600)
 def get_article_content(title, language="en"):
     """
-    Get the content of a Wikipedia article
+    Get the content of a Wikipedia article using the MediaWiki API directly
     
     Args:
         title (str): The title of the article
@@ -45,23 +86,56 @@ def get_article_content(title, language="en"):
         return None
     
     try:
-        # Initialize Wikipedia API with the specified language and a proper user agent
-        user_agent = "TruePedia/1.0 (https://replit.com/; truepedia@example.com) python-wikipediaapi"
-        wiki_wiki = wikipediaapi.Wikipedia(
-            user_agent=user_agent,
-            language=language
-        )
-        # Get the page
-        page = wiki_wiki.page(title)
+        # Use Wikipedia's API directly via requests
+        url = f"https://{language}.wikipedia.org/w/api.php"
         
-        if not page.exists():
+        # First get the summary (extracts)
+        summary_params = {
+            "action": "query",
+            "format": "json",
+            "titles": title,
+            "prop": "extracts",
+            "exintro": True,
+            "explaintext": True
+        }
+        
+        summary_response = requests.get(url, params=summary_params)
+        summary_data = summary_response.json()
+        
+        # Extract page ID and summary
+        pages = summary_data.get("query", {}).get("pages", {})
+        page_id = list(pages.keys())[0]
+        
+        if page_id == "-1":  # Page not found
             return None
         
+        summary = pages[page_id].get("extract", "No summary available")
+        
+        # Now get the full content
+        content_params = {
+            "action": "query",
+            "format": "json",
+            "titles": title,
+            "prop": "extracts",
+            "explaintext": True
+        }
+        
+        content_response = requests.get(url, params=content_params)
+        content_data = content_response.json()
+        
+        # Extract full content
+        content_pages = content_data.get("query", {}).get("pages", {})
+        content = content_pages[page_id].get("extract", "No content available")
+        
+        # Create Wikipedia URL
+        encoded_title = urllib.parse.quote(title.replace(' ', '_'))
+        article_url = f"https://{language}.wikipedia.org/wiki/{encoded_title}"
+        
         return {
-            "title": page.title,
-            "summary": page.summary,
-            "content": page.text,
-            "url": page.fullurl
+            "title": title,
+            "summary": summary,
+            "content": content,
+            "url": article_url
         }
     except Exception as e:
         st.error(f"Error retrieving article: {str(e)}")
@@ -70,7 +144,7 @@ def get_article_content(title, language="en"):
 @st.cache_data(ttl=3600)
 def get_available_languages(title, source_lang="en"):
     """
-    Get available languages for a Wikipedia article
+    Get available languages for a Wikipedia article using the MediaWiki API directly
     
     Args:
         title (str): The title of the article
@@ -83,29 +157,41 @@ def get_available_languages(title, source_lang="en"):
         return {}
     
     try:
-        # Initialize Wikipedia API with proper user agent
-        user_agent = "TruePedia/1.0 (https://replit.com/; truepedia@example.com) python-wikipediaapi"
-        wiki_wiki = wikipediaapi.Wikipedia(
-            user_agent=user_agent,
-            language=source_lang
-        )
-        # Get the page
-        page = wiki_wiki.page(title)
+        # Use Wikipedia's API directly via requests
+        url = f"https://{source_lang}.wikipedia.org/w/api.php"
+        params = {
+            "action": "query",
+            "format": "json",
+            "titles": title,
+            "prop": "langlinks",
+            "lllimit": 500  # Get many language links
+        }
         
-        if not page.exists():
-            return {}
+        response = requests.get(url, params=params)
+        data = response.json()
         
-        # Get langlinks (article versions in other languages)
-        langlinks = page.langlinks
-        available_langs = {lang: langlinks[lang].title for lang in langlinks}
+        # Extract language links
+        pages = data.get("query", {}).get("pages", {})
+        if not pages:
+            return {source_lang: title}
+            
+        page_id = list(pages.keys())[0]
         
-        # Add the source language
-        available_langs[source_lang] = title
+        if page_id == "-1":  # Page not found
+            return {source_lang: title}
+            
+        langlinks = pages[page_id].get("langlinks", [])
+        
+        # Create a dictionary of language codes and titles
+        available_langs = {source_lang: title}
+        for lang in langlinks:
+            available_langs[lang["lang"]] = lang["*"]
         
         return available_langs
     except Exception as e:
         st.error(f"Error retrieving language versions: {str(e)}")
-        return {}
+        # Return at least the source language
+        return {source_lang: title}
 
 @st.cache_data(ttl=3600)
 def get_article_in_language(title, lang):
@@ -121,9 +207,84 @@ def get_article_in_language(title, lang):
     """
     return get_article_content(title, lang)
 
+def split_text_into_chunks(text, chunk_size=800):
+    """
+    Split text into smaller chunks for translation.
+    Try to split at sentence boundaries when possible.
+    
+    Args:
+        text (str): Text to split
+        chunk_size (int): Maximum size of each chunk
+        
+    Returns:
+        list: List of text chunks
+    """
+    if not text:
+        return []
+    
+    # Regular expression to find sentence boundaries
+    sentence_endings = r'(?<=[.!?])\s+'
+    sentences = re.split(sentence_endings, text)
+    
+    chunks = []
+    current_chunk = ""
+    
+    for sentence in sentences:
+        # If this sentence alone is bigger than chunk_size, split it by spaces
+        if len(sentence) > chunk_size:
+            words = sentence.split()
+            temp_chunk = ""
+            for word in words:
+                if len(temp_chunk) + len(word) + 1 > chunk_size:
+                    chunks.append(temp_chunk.strip())
+                    temp_chunk = word + " "
+                else:
+                    temp_chunk += word + " "
+            
+            if temp_chunk.strip():
+                current_chunk += temp_chunk
+        # If adding this sentence would exceed the chunk size,
+        # add current chunk to the list and start a new one
+        elif len(current_chunk) + len(sentence) > chunk_size:
+            chunks.append(current_chunk.strip())
+            current_chunk = sentence + " "
+        else:
+            current_chunk += sentence + " "
+    
+    # Add the last chunk if it's not empty
+    if current_chunk.strip():
+        chunks.append(current_chunk.strip())
+    
+    return chunks
+
+def translate_chunk(chunk, to_lang, from_lang):
+    """
+    Translate a single chunk of text using the public translation API
+    
+    Args:
+        chunk (str): Text chunk to translate
+        to_lang (str): Target language code
+        from_lang (str): Source language code
+        
+    Returns:
+        str: Translated text
+    """
+    if not chunk or not chunk.strip():
+        return ""
+    
+    try:
+        # Use the basic translate function for each chunk
+        return basic_translate(chunk, to_lang, from_lang)
+    except Exception as e:
+        st.warning(f"Error translating chunk: {str(e)}")
+        return chunk  # Return original chunk if translation fails
+
+# Thread-safe lock for translation
+translate_lock = threading.Lock()
+
 def translate_text(text, to_lang, from_lang='auto'):
     """
-    Translate text using free translation library
+    Translate text using multithreaded approach for efficiency
     
     Args:
         text (str): Text to translate
@@ -137,24 +298,71 @@ def translate_text(text, to_lang, from_lang='auto'):
         return ""
     
     try:
-        # Using translate library (free but with limitations)
-        translator = Translator(to_lang=to_lang, from_lang=from_lang)
+        # For very short texts, just translate directly without chunking
+        if len(text) < 200:  # Reduced threshold to only skip chunking for very small texts
+            return basic_translate(text, to_lang, from_lang)
+            
+        # Split text into smaller chunks for translation
+        chunks = split_text_into_chunks(text)
         
-        # For long texts, we need to split it into smaller chunks
-        # to avoid exceeding translate library's limits
-        chunk_size = 500  # Characters
-        chunks = [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
+        if not chunks:
+            return ""
         
+        # Create a progress bar
+        progress_bar = st.progress(0)
+        progress_text = st.empty()
+        progress_text.text("Translating...")
+        
+        # Create a thread pool for concurrent translation
         translated_chunks = []
-        for chunk in chunks:
-            translation = translator.translate(chunk)
-            translated_chunks.append(translation)
-            # Add a small delay to avoid rate limiting
-            time.sleep(0.5)
+        total_chunks = len(chunks)
         
-        return ' '.join(translated_chunks)
+        # Use more workers for faster translation
+        max_workers = min(12, total_chunks)
+        
+        # We'll use a dict to keep track of the original order
+        chunk_results = {}
+        
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            # Submit all translation tasks
+            future_to_chunk = {
+                executor.submit(translate_chunk, chunk, to_lang, from_lang): i 
+                for i, chunk in enumerate(chunks)
+            }
+            
+            # Process results as they complete
+            for i, future in enumerate(as_completed(future_to_chunk)):
+                chunk_index = future_to_chunk[future]
+                try:
+                    # Thread-safe translation
+                    with translate_lock:
+                        translated_text = future.result()
+                    
+                    # Store translated chunks (will sort by index later)
+                    chunk_results[chunk_index] = translated_text
+                    
+                    # Update progress
+                    progress = (i + 1) / total_chunks
+                    progress_bar.progress(progress)
+                    progress_text.text(f"Translating... {i+1}/{total_chunks} chunks complete")
+                    
+                except Exception as e:
+                    st.warning(f"Error with chunk {chunk_index}: {str(e)}")
+                    # Keep the original text for failed translations
+                    chunk_results[chunk_index] = chunks[chunk_index]
+        
+        # Sort chunks by their original index
+        sorted_chunks = [chunk_results.get(i, chunks[i]) for i in range(total_chunks)]
+        result = ' '.join(sorted_chunks)
+        
+        # Clear progress indicators
+        progress_bar.empty()
+        progress_text.empty()
+        
+        return result
+        
     except Exception as e:
-        st.warning(f"Translation error: {str(e)}")
+        st.error(f"Translation error: {str(e)}")
         return text  # Return original text if translation fails
 
 # Dictionary mapping language codes to language names
