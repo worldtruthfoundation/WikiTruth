@@ -511,4 +511,3 @@ def display_collapsible_sections(sections):
         # First section expanded by default, others collapsed
         with st.expander(section["title"], expanded=(i == 0)):
             st.markdown(section["content"])
-            
