@@ -156,3 +156,4 @@ def create_highlight_interface(text, article_id, context):
                 st.error("The text you entered wasn't found in this section. Please copy and paste the exact text from the article.")
         else:
             st.warning("Please enter some text to mark for review.")
+
