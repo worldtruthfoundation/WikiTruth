@@ -159,7 +159,7 @@ if 'show_reviews' not in st.session_state:
     st.session_state.show_reviews = True
 
 # Title and description
-st.markdown('<div class="main-header">TruePedia</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header">ЦWikiTruth</div>', unsafe_allow_html=True)
 st.markdown('<div class="subheader">Multilingual Wikipedia Search & Translation</div>', unsafe_allow_html=True)
 
 # Sidebar for search and settings
