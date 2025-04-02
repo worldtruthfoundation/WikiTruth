@@ -20,6 +20,10 @@ from highlight_utils import (
     apply_highlights_to_text,
     create_highlight_interface
 )
+from doc_utils import (
+    create_wiki_document,
+    get_download_filename
+)
 
 # Page configuration
 st.set_page_config(
@@ -136,6 +140,11 @@ st.markdown("""
         margin-bottom: 10px;
         font-size: 0.9rem;
         border: 1px solid #FBC02D;
+    }
+    .download-btn-container {
+        display: flex;
+        justify-content: center;
+        margin: 15px 0;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -358,6 +367,40 @@ if st.session_state.current_article:
                 # Add highlighting interface if needed
                 if st.session_state.highlight_mode:
                     create_highlight_interface(translated_summary, article_id, "summary")
+                
+                # Create translated article object for document generation
+                translated_article = {
+                    "title": article["title"] + f" (Translated to {get_language_name(st.session_state.translate_to)})",
+                    "summary": translated_summary,
+                    "content": translated_summary,  # Using summary as content since we're in summary tab
+                    "url": article["url"]
+                }
+                
+                # Create download button for translated summary
+                translated_filename = get_download_filename(
+                    article["title"], 
+                    True, 
+                    st.session_state.translate_to
+                )
+                
+                # Create document for download
+                doc_buffer = create_wiki_document(
+                    translated_article,
+                    get_language_name(st.session_state.current_language),
+                    True,
+                    get_language_name(st.session_state.translate_to)
+                )
+                
+                # Add download button for translated content
+                st.markdown('<div class="download-btn-container">', unsafe_allow_html=True)
+                st.download_button(
+                    label="📄 Download Translated Summary",
+                    data=doc_buffer,
+                    file_name=translated_filename,
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    key="download_translated_summary"
+                )
+                st.markdown('</div>', unsafe_allow_html=True)
         else:
             # Apply highlights if showing reviews is enabled
             if st.session_state.show_reviews and highlights:
@@ -371,6 +414,24 @@ if st.session_state.current_article:
             # Add highlighting interface if needed
             if st.session_state.highlight_mode:
                 create_highlight_interface(article["summary"], article_id, "summary")
+                
+            # Create document for download
+            doc_filename = get_download_filename(article["title"])
+            doc_buffer = create_wiki_document(
+                article,
+                get_language_name(st.session_state.current_language)
+            )
+            
+            # Add download button for original content
+            st.markdown('<div class="download-btn-container">', unsafe_allow_html=True)
+            st.download_button(
+                label="📄 Download Article",
+                data=doc_buffer,
+                file_name=doc_filename,
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                key="download_original_summary"
+            )
+            st.markdown('</div>', unsafe_allow_html=True)
     
     with content_tab:
         # Article ID for highlighting
@@ -442,8 +503,43 @@ if st.session_state.current_article:
                         if st.session_state.highlight_mode:
                             create_highlight_interface(section["content"], article_id, f"section_{i}")
                 
-                # No length limitations on translation
-                pass
+                # Create translated article object for document generation
+                translated_article = {
+                    "title": article["title"] + f" (Translated to {get_language_name(st.session_state.translate_to)})",
+                    "summary": "",
+                    "content": "",
+                    "url": article["url"]
+                }
+                
+                # Combine all translated content
+                for section in translated_sections:
+                    translated_article["content"] += section["title"] + "\n\n" + section["content"] + "\n\n"
+                
+                # Create download button for translated content
+                translated_filename = get_download_filename(
+                    article["title"], 
+                    True, 
+                    st.session_state.translate_to
+                )
+                
+                # Create document for download
+                doc_buffer = create_wiki_document(
+                    translated_article,
+                    get_language_name(st.session_state.current_language),
+                    True,
+                    get_language_name(st.session_state.translate_to)
+                )
+                
+                # Add download button for translated content
+                st.markdown('<div class="download-btn-container">', unsafe_allow_html=True)
+                st.download_button(
+                    label="📄 Download Translated Article",
+                    data=doc_buffer,
+                    file_name=translated_filename,
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    key="download_translated_content"
+                )
+                st.markdown('</div>', unsafe_allow_html=True)
         else:
             # Split content into sections for collapsible viewing
             sections = split_content_into_sections(article["content"])
@@ -464,6 +560,24 @@ if st.session_state.current_article:
                     
                     if st.session_state.highlight_mode:
                         create_highlight_interface(section["content"], article_id, f"section_{i}")
+            
+            # Create document for download
+            doc_filename = get_download_filename(article["title"])
+            doc_buffer = create_wiki_document(
+                article,
+                get_language_name(st.session_state.current_language)
+            )
+            
+            # Add download button for original content
+            st.markdown('<div class="download-btn-container">', unsafe_allow_html=True)
+            st.download_button(
+                label="📄 Download Article",
+                data=doc_buffer,
+                file_name=doc_filename,
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                key="download_original_content"
+            )
+            st.markdown('</div>', unsafe_allow_html=True)
 else:
     # Welcome message when no article is selected
     st.info("👈 Search for a Wikipedia article in any language to get started!")
@@ -476,8 +590,9 @@ else:
     2. 📝 **Select**: Choose an article from the search results (displayed as tags)
     3. 🌐 **Explore**: View the article in different languages
     4. 🔄 **Translate**: Translate the article content to your preferred language
-    5. 👁️ **Toggle Reviews**: Choose whether to see community reviews and highlights
-    6. ✨ **Collaborate**: Highlight important passages for other users to see
+    5. 📥 **Download**: Download articles in DOCX format (original and translated versions)
+    6. 👁️ **Toggle Reviews**: Choose whether to see community reviews and highlights
+    7. ✨ **Collaborate**: Highlight important passages for other users to see
     
     TruePedia gives you access to Wikipedia content across multiple languages, provides translation capabilities, and allows collaborative highlighting for better knowledge sharing.
     """)

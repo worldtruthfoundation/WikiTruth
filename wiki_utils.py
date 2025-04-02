@@ -495,12 +495,15 @@ def split_content_into_sections(content):
     
     return sections
 
-def display_collapsible_sections(sections):
+def display_collapsible_sections(sections, article_id=None, context=None, highlight_mode=False):
     """
     Display content sections in collapsible expanders
     
     Args:
         sections (list): List of dictionaries with section titles and content
+        article_id (str, optional): Unique identifier for the article
+        context (str, optional): Context information
+        highlight_mode (bool, optional): Whether to enable highlighting
     """
     if not sections:
         st.write("No content available")
@@ -508,6 +511,12 @@ def display_collapsible_sections(sections):
     
     # Display each section in an expander
     for i, section in enumerate(sections):
+        title = section.get("title") or "Introduction"
         # First section expanded by default, others collapsed
-        with st.expander(section["title"], expanded=(i == 0)):
-            st.markdown(section["content"])
+        with st.expander(title, expanded=(i == 0)):
+            if highlight_mode and article_id and context:
+                from highlight_utils import create_highlight_interface
+                section_context = f"{context}_{i}" if context else str(i)
+                create_highlight_interface(section["content"], article_id, section_context)
+            else:
+                st.markdown(section["content"])

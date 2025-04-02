@@ -2,4 +2,9 @@ streamlit
 wikipedia
 wikipedia-api
 translate
-
+unidecode
+python-docx  # For DOCX document creation and manipulation
+docx         # Additional DOCX utilities
+fpdf2        # For PDF document creation (alternative format support)
+requests     # For API interactions
+beautifulsoup4  # For HTML parsing
