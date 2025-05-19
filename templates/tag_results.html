@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}WikiTruth - Search Results{% endblock %}
+
+{% block content %}
+<div class="search-results">
+    <div class="mb-4">
+        <h1>Search Results</h1>
+        <p class="text-muted">
+            Showing results for "<strong>{{ query }}</strong>" in {{ languages[language] }}
+        </p>
+    </div>
+    
+    {% if results %}
+        <div class="tag-list">
+            {% for title in results %}
+                <div class="tag-item">
+                    <a href="{{ url_for('article', lang=language, title=title) }}" class="tag-link">
+                        <span class="tag-title">{{ title }}</span>
+                        <span class="tag-icon"><i class="fas fa-chevron-right"></i></span>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            No results found. Try a different search term or language.
+        </div>
+    {% endif %}
+    
+    <div class="mt-4">
+        <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Search
+        </a>
+    </div>
+</div>
+{% endblock %}

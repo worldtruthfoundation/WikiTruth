@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}WikiTruth{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('home') }}">
+                <span class="app-name">WikiTruth</span>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('home') }}">
+                            <i class="fas fa-search"></i> Search
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('wikitok') }}">
+                            <i class="fas fa-scroll"></i> WikiTok
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <div class="nav-link share-button" onclick="showShareOptions()">
+                            <i class="fas fa-share-alt"></i> Share
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link kofi-button" href="https://ko-fi.com/wikitruth" target="_blank">
+                            <i class="fas fa-mug-hot"></i> Support on Ko-Fi
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="container mt-3">
+        {% for category, message in get_flashed_messages(with_categories=true) %}
+            <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mt-4 mb-5">
+        {% if error %}
+            <div class="alert alert-danger">
+                {{ error }}
+            </div>
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Share Modal -->
+    <div class="modal fade" id="shareModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Share WikiTruth</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="share-options">
+                        <a href="#" class="share-option" id="share-reddit" onclick="shareOn('reddit')">
+                            <i class="fab fa-reddit-alien"></i>
+                            <span>Reddit</span>
+                        </a>
+                        <a href="#" class="share-option" id="share-whatsapp" onclick="shareOn('whatsapp')">
+                            <i class="fab fa-whatsapp"></i>
+                            <span>WhatsApp</span>
+                        </a>
+                        <a href="#" class="share-option" id="share-telegram" onclick="shareOn('telegram')">
+                            <i class="fab fa-telegram"></i>
+                            <span>Telegram</span>
+                        </a>
+                        <a id="share-x" class="share-option" onclick="shareOn('x')">
+                            <i class="fab fa-twitter"></i><span>X</span>
+                        </a>
+                        <a id="share-linkedin" class="share-option" onclick="shareOn('linkedin')">
+                            <i class="fab fa-linkedin"></i><span>LinkedIn</span>
+                        </a>
+                        <a href="#" class="share-option" id="share-gmail" onclick="shareOn('gmail')">
+                            <i class="fas fa-envelope"></i>
+                            <span>Gmail</span>
+                        </a>
+                    </div>
+                    <div class="copy-link mt-4">
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="share-url" value="" readonly>
+                            <button class="btn btn-outline-secondary" type="button" onclick="copyShareLink()">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

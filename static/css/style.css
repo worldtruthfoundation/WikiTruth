@@ -1,0 +1,588 @@
+/* Global Styles */
+:root {
+    /* Updated color scheme as requested */
+    --primary-text: #000000;      /* Black */
+    --secondary-text: #333333;    /* Dark gray */
+    --background-light: #ffffff;  /* White */
+    --background-off-white: #f9f9f9;  /* Nearly white */
+    --background-beige: #f2efe8;  /* Light beige */
+    
+    /* Accent colors for buttons with RGB versions for transparency */
+    --accent-red: #ff6b6b;        /* Light red (for buttons) */
+    --accent-red-rgb: 255, 107, 107;
+    --accent-blue: #74b9ff;       /* Sky blue (for buttons) */
+    --accent-blue-rgb: 116, 185, 255;
+    
+    --border-color: #e0e0e0;      /* Light gray */
+    
+    /* Social media brand colors */
+    --reddit-orange: #FF4500;
+    --whatsapp-green: #25D366;
+    --telegram-blue: #0088cc;
+    --gmail-red: #EA4335;
+    --facebook-blue: #4267B2;
+    --twitter-black:  #000000;   /* X (Twitter) */
+    --linkedin-blue: #0a66c2;   /* LinkedIn   */
+}
+
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--primary-text);
+    background-color: var(--background-light);
+    line-height: 1.6;
+    /* Optimize performance with these settings */
+    text-rendering: optimizeSpeed;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Add preload hints for font awesome to improve icon loading performance */
+.preload-hint {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    z-index: -1;
+}
+
+/* Add fade in animation for a smoother loading experience */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fadeIn {
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Navigation */
+.navbar {
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--background-light) !important;
+}
+
+.app-name {
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: var(--primary-text);
+}
+
+.kofi-button {
+    color: var(--accent-red) !important;
+    font-weight: 600;
+}
+
+/* Home Page */
+.home-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+/* Updated search section */
+.search-section {
+    background-color: var(--background-light);
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1.5rem;
+}
+
+.search-section h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.form-select, .form-control {
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+}
+
+.btn-dark {
+    border-radius: 0 8px 8px 0;
+}
+
+/* Features section */
+.features-section {
+    margin-bottom: 1.5rem;
+}
+
+.features-section h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.feature-card {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background-color: var(--background-light);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    margin-bottom: 0.75rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    margin-right: 1rem;
+    color: #444;
+}
+
+.feature-icon i {
+    font-size: 1.25rem;
+}
+
+.feature-text {
+    font-size: 1rem;
+}
+
+/* WikiTruth Compare section */
+.wikitruth-compare-section {
+    /* скопировано с .wikitok-section */
+    background: linear-gradient(135deg, #74b9ff, #5B86E5); /* нежно-голубой → синий */
+    border-radius: 12px;
+    padding: 1.5rem;
+    color: white;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.wikitruth-compare-content {                /* копия wikitok-content */
+    position: relative;
+    z-index: 2;
+}
+
+.wikitruth-compare-section h2 {
+    font-weight: 700;
+    margin-bottom: .5rem;
+}
+
+
+/* WikiTok section */
+.wikitok-section {
+    background: linear-gradient(135deg, #5B86E5, #FC466B);
+    border-radius: 12px;
+    padding: 1.5rem;
+    color: white;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.wikitok-content {
+    position: relative;
+    z-index: 2;
+}
+
+.wikitok-section h2 {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.wikitok-section p {
+    margin-bottom: 1.25rem;
+    opacity: 0.9;
+}
+
+.btn-wikitok {
+    background-color: white;
+    color: #333;
+    border-radius: 25px;
+    padding: 0.6rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.btn-wikitok:hover, .btn-wikitok:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background-color: white;
+    color: #FC466B;
+}
+
+/* Support section */
+.support-section {
+    text-align: center;
+    margin: 2rem 0;
+}
+
+.support-section p {
+    margin-bottom: 0.75rem;
+    color: var(--secondary-text);
+}
+
+.btn-kofi {
+    background-color: var(--accent-red);
+    color: white;
+    border-radius: 25px;
+    padding: 0.6rem 1.5rem;
+    border: none;
+    transition: all 0.2s ease;
+}
+
+.btn-kofi:hover, .btn-kofi:focus {
+    background-color: #ff5a5a;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+/* Home page footer */
+.home-container footer {
+    color: var(--secondary-text);
+    font-size: 0.9rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.5rem;
+    margin-top: 2rem;
+}
+
+/* Button styles */
+.btn-primary {
+    background-color: var(--accent-blue);
+    border-color: var(--accent-blue);
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: #3d86ef;
+    border-color: #3d86ef;
+}
+
+.btn-accent-blue {
+    background-color: var(--accent-blue);
+    border-color: var(--accent-blue);
+    color: white;
+}
+
+.btn-accent-blue:hover, .btn-accent-blue:focus {
+    background-color: #3d86ef;
+    border-color: #3d86ef;
+    color: white;
+}
+
+.btn-accent-red {
+    background-color: var(--accent-red);
+    border-color: var(--accent-red);
+    color: white;
+}
+
+.btn-accent-red:hover, .btn-accent-red:focus {
+    background-color: #ff5a5a;
+    border-color: #ff5a5a;
+    color: white;
+}
+
+/* Tag Results */
+.tag-list {
+    margin-top: 1.5rem;
+}
+
+.tag-item {
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tag-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    color: var(--primary-text);
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.tag-link:hover, .tag-link:focus {
+    background-color: var(--background-beige);
+    text-decoration: none;
+    color: var(--primary-text);
+}
+
+.tag-title {
+    font-weight: 500;
+}
+
+.tag-icon {
+    color: var(--secondary-text);
+}
+
+/* Article Page */
+.article-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.article-header h1 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.article-summary {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+}
+
+.article-section {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.article-section h3 {
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.section-content {
+    line-height: 1.8;
+}
+
+.toc-container {
+    position: sticky;
+    top: 1rem;
+    background-color: var(--background-off-white);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    transition: box-shadow 0.3s ease, transform 0.3s ease, background-color 0.3s ease;
+}
+
+/* Highlight effect for TOC when back-to-toc button is clicked */
+.toc-highlight {
+    box-shadow: 0 0 20px rgba(var(--accent-blue-rgb, 116, 185, 255), 0.7);
+    background-color: var(--background-beige);
+    transform: translateY(-5px);
+    animation: pulse 1.5s ease-out;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(var(--accent-blue-rgb, 116, 185, 255), 0.7); }
+    70% { box-shadow: 0 0 0 20px rgba(var(--accent-blue-rgb, 116, 185, 255), 0); }
+    100% { box-shadow: 0 0 0 0 rgba(var(--accent-blue-rgb, 116, 185, 255), 0); }
+}
+
+/* Share Options */
+.share-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.share-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    padding: 0.8rem;
+    border-radius: 8px;
+    background-color: var(--background-off-white);
+    transition: all 0.2s ease;
+    border: 1px solid var(--border-color);
+}
+
+.share-option:hover, .share-option:focus {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+}
+
+.share-option i {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Social media icons with their brand colors */
+.share-option#share-reddit i, 
+.share-option[onclick*="reddit"] i {
+    color: var(--reddit-orange);
+}
+
+.share-option#share-whatsapp i,
+.share-option[onclick*="whatsapp"] i {
+    color: var(--whatsapp-green);
+}
+
+.share-option#share-telegram i,
+.share-option[onclick*="telegram"] i {
+    color: var(--telegram-blue);
+}
+
+
+.share-option#share-gmail i,
+.share-option[onclick*="gmail"] i {
+    color: var(--gmail-red);
+}
+
+/* цвет иконки — уже есть */
+.share-option[onclick*="x"] i {
+    color: var(--twitter-black);
+}
+
+/* скрываем подпись под иконкой X */
+.share-option[onclick*="x"] span {
+    display: none !important;
+}
+
+
+.share-option#share-linkedin i,
+.share-option[onclick*="linkedin"] i {
+    color: var(--linkedin-blue);
+}
+
+.share-option#share-x span,
+.share-option#share-x::after {
+    display: none !important;
+}
+
+
+.share-option#share-x span { 
+    display: none;
+}
+
+.share-option span {
+    color: var(--secondary-text);
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+
+/* WikiTok Feed */
+.wikitok-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.wikitok-feed {
+    margin-top: 2rem;
+}
+
+.article-card {
+    background-color: var(--background-light);
+    border-radius: 8px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+    overflow: hidden;
+    transform: translateZ(0); /* Hardware acceleration */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    will-change: transform, box-shadow; /* Optimize for animations */
+    opacity: 0;
+    animation: fadeIn 0.6s ease-out forwards;
+    animation-delay: calc(var(--card-index, 0) * 0.15s);
+}
+
+.article-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.article-card-image-container {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    background-color: var(--background-beige);
+}
+
+.article-card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.article-card:hover .article-card-image {
+    transform: scale(1.05); /* Subtle zoom effect on hover */
+}
+
+.article-card-image-placeholder {
+    position: relative;
+    width: 100%;
+    height: 120px;
+    background-color: var(--background-beige);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--secondary-text);
+    font-style: italic;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.language-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    color: var(--primary-text) !important;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    z-index: 1;
+}
+
+.article-card-content {
+    padding: 1.5rem;
+}
+
+.article-card-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.article-card-summary {
+    color: var(--secondary-text);
+    margin-bottom: 1rem;
+}
+
+.article-card-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .article-section {
+        padding-left: 0;
+        padding-right: 0;
+    }
+    
+    .search-container, .briefly-explained, .wikitok-promo {
+        padding: 1.5rem;
+    }
+
+    .share-option {
+        padding: 0.5rem;
+    }
+    
+    .share-option i {
+        font-size: 1.2rem;
+    }
+}

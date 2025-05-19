@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block title %}WikiTruth - {{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .toc-menu {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    
+    .toc-back-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 100;
+        display: none;
+    }
+    
+    @media (max-width: 768px) {
+        .toc-back-button {
+            bottom: 70px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="article-container">
+    <div class="article-header mb-4">
+        <h1>{{ title }}</h1>
+        
+        <div class="language-controls d-flex flex-wrap align-items-center justify-content-between mt-3">
+            <div class="d-flex flex-wrap align-items-center">
+                <div class="me-3 mb-2">
+                    <label for="article-language" class="form-label mb-0 me-2">Language:</label>
+                    <select id="article-language" class="form-select form-select-sm d-inline-block w-auto">
+                        {% for code, lang_name in available_languages.items() %}
+                            <option value="{{ code }}" {% if code == language %}selected{% endif %}>{{ lang_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="d-flex flex-wrap">
+                    <button class="btn btn-sm btn-accent-blue me-2 mb-2" id="translate-button" data-bs-toggle="modal" data-bs-target="#translateModal">
+                        <i class="fas fa-language"></i> Translate
+                    </button>
+                    
+                    {% if wiki_lang_url %}
+                    <a href="{{ wiki_lang_url }}" target="_blank" class="btn btn-sm btn-outline-secondary mb-2" title="View more languages on Wikipedia">
+                        <i class="fas fa-globe"></i> More Languages
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Download Full Article Button -->
+            <div class="mb-2">
+                <button class="btn btn-accent-red" onclick="downloadContent('full')">
+                    <i class="fas fa-file-download"></i> Download Full Article
+                </button>
+            </div>
+        </div>
+        
+        <!-- Main Article Image (if available) -->
+        {% if main_image %}
+        <div class="article-main-image-container mt-4 mb-4">
+            <img src="{{ main_image }}" class="article-main-image img-fluid rounded shadow-sm" alt="{{ title }}">
+            <div class="image-caption text-center mt-2 text-muted small">
+                <i class="fas fa-camera me-1"></i> Image from Wikipedia
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="article-view-controls mb-4">
+        <div class="btn-group" role="group">
+            <input type="radio" class="btn-check" name="view-mode" id="summary-mode" autocomplete="off" checked>
+            <label class="btn btn-outline-primary" for="summary-mode">Summary</label>
+            
+            <input type="radio" class="btn-check" name="view-mode" id="full-mode" autocomplete="off">
+            <label class="btn btn-outline-primary" for="full-mode">Full Content</label>
+        </div>
+    </div>
+    
+    <div class="article-content">
+        <!-- Summary View -->
+        <div id="summary-view">
+            <div class="article-summary">
+                <p>{{ summary }}</p>
+            </div>
+            
+            <div class="article-actions mt-4">
+                <button class="btn btn-sm btn-outline-secondary me-2" onclick="downloadContent('summary')">
+                    <i class="fas fa-download"></i> Download Text
+                </button>
+                
+                <button class="btn btn-sm btn-outline-secondary" onclick="showArticleShareOptions()">
+                    <i class="fas fa-share-alt"></i> Share
+                </button>
+            </div>
+            
+            <div class="article-share mt-4">
+                <h5>Share</h5>
+                <div class="share-options">
+                    <a href="#" class="share-option" onclick="shareArticleOn('reddit')">
+                        <i class="fab fa-reddit-alien"></i>
+                    </a>
+                    <a href="#" class="share-option" onclick="shareArticleOn('whatsapp')">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="#" class="share-option" onclick="shareArticleOn('telegram')">
+                        <i class="fab fa-telegram"></i>
+                    </a>
+                    <a href="#" class="share-option" onclick="shareArticleOn('x')">
+                        <i class="fab fa-x-twitter"></i>
+                        <span>X</span>
+                    </a>                    
+                    <a href="#" class="share-option" onclick="shareArticleOn('linkedin')">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="#" class="share-option" onclick="shareArticleOn('gmail')">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+                <div class="copy-link mt-3">
+                    <div class="input-group">
+                        <input type="text" class="form-control form-control-sm" id="article-share-url" value="{{ request.url }}" readonly>
+                        <button class="btn btn-sm btn-outline-secondary" type="button" onclick="copyArticleShareLink()">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Full Content View -->
+        <div id="full-view" style="display: none;">
+            <div class="row">
+                <div class="col-md-3 mb-4">
+                    <div class="toc-container">
+                        <h5>Table of Contents</h5>
+                        <div class="toc-menu list-group">
+                            {% for section in content.keys() %}
+                                <a class="list-group-item list-group-item-action" href="#section-{{ loop.index }}">
+                                    {{ section }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-9">
+                    <div class="article-full-content">
+                        {% for section, text in content.items() %}
+                            <div id="section-{{ loop.index }}" class="article-section">
+                                <h3>{{ section }}</h3>
+                                
+                                <!-- Show image with section if we have content images -->
+                                {% if loop.index0 < content_images|length and loop.index0 < 5 %}
+                                <div class="section-image-container mb-3">
+                                    <img src="{{ content_images[loop.index0] }}" 
+                                         class="section-image img-fluid rounded float-md-end ms-md-3 mb-3" 
+                                         style="max-width: 300px;" 
+                                         alt="{{ section }}">
+                                </div>
+                                {% endif %}
+                                
+                                <div class="section-content">
+                                    <p>{{ text|safe }}</p>
+                                </div>
+                                
+                                <div class="section-actions mt-3">
+                                    <button class="btn btn-sm btn-accent-blue me-2" onclick="translateSection('{{ section }}', '{{ language }}')">
+                                        <i class="fas fa-language"></i> Translate
+                                    </button>
+                                    
+                                    <!-- Download section button -->
+                                    <button class="btn btn-sm btn-accent-red" onclick="downloadSection('{{ section }}')">
+                                        <i class="fas fa-file-download"></i> Download Section
+                                    </button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        
+                        <!-- Show any remaining images in a gallery at the end -->
+                        {% if content_images|length > 5 %}
+                        <div class="article-gallery mt-5 mb-4">
+                            <h3>Gallery</h3>
+                            <div class="row">
+                                {% for img_url in content_images[5:] %}
+                                    <div class="col-md-4 col-sm-6 mb-4">
+                                        <div class="gallery-item">
+                                            <img src="{{ img_url }}" class="img-fluid rounded shadow-sm" alt="Gallery image">
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="article-actions mt-4">
+                        <button class="btn btn-outline-secondary me-2" onclick="downloadContent('full')">
+                            <i class="fas fa-download"></i> Download Text
+                        </button>
+                        
+                        <button class="btn btn-outline-secondary" onclick="showArticleShareOptions()">
+                            <i class="fas fa-share-alt"></i> Share
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn btn-accent-blue btn-sm toc-back-button fixed-bottom mx-auto mb-4 d-none" id="back-to-toc" style="width: auto; max-width: 200px; z-index: 1000; left: 0; right: 0; box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
+                <i class="fas fa-arrow-up"></i> Back to Contents
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Translation Modal -->
+<div class="modal fade" id="translateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Translate Content</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="translate-target" class="form-label">Target Language:</label>
+                    <select id="translate-target" class="form-select">
+                        {% for code, name in languages.items() %}
+                            <option value="{{ code }}" {% if code == 'en' and language != 'en' %}selected{% endif %}>{{ name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">What to translate:</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="translate-part" id="translate-summary" value="summary" checked>
+                        <label class="form-check-label" for="translate-summary">
+                            Summary only
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="translate-part" id="translate-section" value="section">
+                        <label class="form-check-label" for="translate-section">
+                            Specific section
+                        </label>
+                    </div>
+                </div>
+                
+                <div id="section-selector" style="display: none;">
+                    <label for="translate-section-select" class="form-label">Select section:</label>
+                    <select id="translate-section-select" class="form-select">
+                        {% for section in content.keys() %}
+                            <option value="{{ section }}">{{ section }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="translateSelected()">Translate</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Translation Result Modal -->
+<div class="modal fade" id="translationResultModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Translation Result</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="translation-result"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="downloadTranslation()">Download</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden form for storing article data -->
+<form id="article-data" style="display: none;">
+    <input type="hidden" id="article-title" value="{{ title }}">
+    <input type="hidden" id="article-language" value="{{ language }}">
+    <input type="hidden" id="article-summary" value="{{ summary }}">
+    {% for section, text in content.items() %}
+        <input type="hidden" id="article-section-{{ loop.index }}" data-section="{{ section }}" value="{{ text }}">
+    {% endfor %}
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/article.js') }}"></script>
+{% endblock %}

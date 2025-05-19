@@ -1,0 +1,103 @@
+Create a Python-based mobile-friendly Flask web application called "WikiTruth".
+
+Home Screen:
+When the user opens the app, they see:
+
+A Search field
+
+A Language selector (for choosing the input query language)
+
+A section titled “Briefly Explained”
+
+A button leading to “WikiTok”
+
+Main App Flow:
+Search and Language Input:
+The user selects a language and types a query.
+
+Tag Page:
+After submitting the query, the user is shown a list of tags – these are Wikipedia article titles matching the query.
+
+Article Page:
+When a tag is selected, the user sees:
+
+A summary of the article
+
+Option to switch to Full Content
+
+Article Page Functions:
+Language: Switch between available Wikipedia languages (e.g., English, Russian, Spanish).
+
+Translate: Select a target language and choose to translate:
+
+Only the summary
+
+Specific sections from the full article (not the whole article by default)
+
+Full Content includes:
+
+An interactive Table of Contents (ToC), allowing navigation to sections like Biography, Death, Life
+
+A fixed button (bottom-right or side) to return to ToC
+
+Download Text:
+
+Download the summary, article, or translation as a .docx file.
+
+Share:
+
+A share section under the summary with icons for:
+
+X (Twitter), WhatsApp, Viber, Telegram, Instagram, Gmail
+
+A copy link button should also be available.
+
+Share feature must also appear in general app navigation.
+
+WikiTok Section:
+Accessible via:
+
+A button on the homepage below the search area
+
+In the app menu (three dots icon)
+
+WikiTok is a scrollable, infinite feed of Wikipedia articles with images.
+
+In WikiTok:
+
+Articles appear as cards with:
+
+A picture
+
+A summary
+
+There is a "Read More" button leading to the full article in WikiTruth.
+
+Users can:
+
+Share the article (same social buttons)
+
+Download it as a .docx file
+
+Users can filter feed content by:
+
+One or multiple languages
+
+Choosing whether to display:
+
+All articles
+
+Articles only with images (default setting)
+
+UI / Design Style:
+Inspired by Ko-Fi: minimalistic, calm, elegant
+
+Color palette:
+
+Primary colors: black, white, beige
+
+Accent colors for buttons: light red and sky blue
+
+Clean, uncluttered interface
+
+Add a “Support on Ko-Fi” button (https://ko-fi.com/wikitruth)

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}WikiTruth - WikiTok{% endblock %}
+
+{% block content %}
+<div class="wikitok-container">
+    <div class="wikitok-header mb-4">
+        <h1>WikiTok</h1>
+        <p class="lead">Scroll through a feed of interesting Wikipedia articles</p>
+    </div>
+    
+    <div class="filter-controls mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Filter Feed</h5>
+                
+                <div class="mb-3">
+                    <label class="form-label">Languages:</label>
+                    <div class="language-selection">
+                        {% for code, name in languages.items() %}
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input language-checkbox" type="checkbox" id="lang-{{ code }}" value="{{ code }}" 
+                                    {% if code in selected_langs %}checked{% endif %}>
+                                <label class="form-check-label" for="lang-{{ code }}">{{ name }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="mt-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="select-all-langs">Select All</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="deselect-all-langs">Deselect All</button>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Display:</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="image-filter" id="only-with-images" value="true" {% if images_only %}checked{% endif %}>
+                        <label class="form-check-label" for="only-with-images">
+                            Only articles with images
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="image-filter" id="all-articles" value="false" {% if not images_only %}checked{% endif %}>
+                        <label class="form-check-label" for="all-articles">
+                            All articles
+                        </label>
+                    </div>
+                </div>
+                
+                <button id="apply-filters" class="btn btn-primary">Apply Filters</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="wikitok-feed" class="wikitok-feed">
+        <!-- Articles will be loaded here dynamically -->
+        <div class="text-center p-5">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading articles...</p>
+        </div>
+    </div>
+    
+    <div id="scroll-loader" class="text-center p-3" style="display: none;">
+        <div class="spinner-border spinner-border-sm" role="status">
+            <span class="visually-hidden">Loading more...</span>
+        </div>
+        <p class="small mb-0">Loading more articles...</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/wikitok.js') }}"></script>
+{% endblock %}

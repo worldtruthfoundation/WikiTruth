@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}WikiTruth - Home{% endblock %}
+
+{% block content %}
+<div class="home-container">
+    <h1 class="text-center mb-4">WikiTruth</h1>
+    
+    <div class="search-section mb-4">
+        <h2 class="mb-4">Multilingual Wikipedia Search</h2>
+        
+        <form action="{{ url_for('search') }}" method="POST">
+            <div class="mb-3">
+                <label for="language" class="form-label">Search Language</label>
+                <select class="form-select" id="language" name="language">
+                    {% for code, name in languages.items() %}
+                        <option value="{{ code }}" {% if code == current_lang %}selected{% endif %}>{{ name }} ({{ code }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <label for="query" class="form-label">Search Wikipedia</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="query" name="query" placeholder="Enter your search query">
+                    <button class="btn btn-dark" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <div class="features-section">
+        <h2 class="mb-4">Features</h2>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-globe"></i>
+            </div>
+            <div class="feature-text">Search Wikipedia in multiple languages</div>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-language"></i>
+            </div>
+            <div class="feature-text">Section-by-section translation</div>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-share-alt"></i>
+            </div>
+            <div class="feature-text">Share articles on social media</div>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">
+                <i class="fas fa-file-download"></i>
+            </div>
+            <div class="feature-text">Download articles as documents</div>
+        </div>
+        
+
+    </div>
+
+    <div class="wikitruth-compare-section">
+        <div class="wikitruth-compare-content">
+            <h2><i class="fas fa-balance-scale"></i> Try WikiTruth Compare</h2>
+            <p>Instantly compare Wikipedia articles across languages</p>
+            <!-- тот же стиль, что и у WikiTok -->
+            <a href="https://wikitruthcompare.onrender.com/"
+               target="_blank"
+               class="btn btn-wikitok">
+                <i class="fas fa-play"></i> Launch WikiTruth Compare
+            </a>
+        </div>
+    </div>
+    
+    <div class="wikitok-section">
+        <div class="wikitok-content">
+            <h2><i class="fas fa-film"></i> Try WikiTok</h2>
+            <p>Endless scrolling of interesting Wikipedia articles with images</p>
+            <a href="{{ url_for('wikitok') }}" class="btn btn-wikitok">
+                <i class="fas fa-play"></i> Launch WikiTok
+            </a>
+        </div>
+    </div>
+    
+    <div class="support-section">
+        <p>Support this project:</p>
+        <a href="https://ko-fi.com/wikitruth" target="_blank" class="btn btn-kofi">
+            <i class="fas fa-mug-hot"></i> Support on Ko-fi
+        </a>
+    </div>
+    
+    <footer class="text-center mt-5">
+        <p>WikiTruth - Multilingual Wikipedia Search & Translation</p>
+        <a href="https://ko-fi.com/wikitruth" target="_blank" class="btn btn-sm btn-kofi">
+            <i class="fas fa-mug-hot"></i> Support on Ko-fi
+        </a>
+        <p class="mt-2">© 2025 WikiTruth - All content from Wikipedia</p>
+    </footer>
+</div>
+{% endblock %}
